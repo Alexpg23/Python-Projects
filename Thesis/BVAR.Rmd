@@ -1,0 +1,411 @@
+---
+title: "BVAR"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+
+#install.packages('bvarsv')
+#install.packages('Rcpp')
+#install.packages("readxl")
+#install.packages('matlib')
+library(readxl)
+library(Rcpp)
+library(bvarsv)
+library(ggplot2)  
+library(quantmod)
+library(xts)
+library(readr)
+library(latex2exp)
+library(gridExtra) 
+library(summarytools)
+library(qwraps2)
+library(normtest)
+library(nortest)
+library(moments)
+library(xtable)
+library(sm)
+library(astsa)
+library(portes)
+library(xlsx)
+library(tseries)
+library(forecast)
+library(matlib)
+
+#rm(list=ls())
+#"C:/Users/apala/OneDrive/Documents/EDHEC/Third Term/Tesis/BVAR/bvarsv/"
+mydirectory <- "C:/Users/apala/OneDrive/Documents/Python/Thesis"
+setwd(mydirectory)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+load("data/usmacro.RData")
+bv <- bvar.sv.tvp(usmacro)
+varcov <- bv$H.postmean
+coefs <- bv$Beta.postmean
+varcov[,,111]
+
+bv$Q.postmean
+bv$S.postmean
+bv$W.postmean
+bv$Beta.postmean[,,111]
+
+
+plot(usmacro)
+```
+
+
+
+```{r}
+SP_sh <- read.csv("S&P_VAR_sh_input.csv", row.names = 1)
+SP_v <- read.csv("S&P_VAR_v_input.csv", row.names = 1)
+C_sh <- read.csv("C_VAR_sh_input.csv", row.names = 1)
+C_v <- read.csv("C_VAR_v_input.csv", row.names = 1)
+A_sh <- read.csv("A_VAR_sh_input.csv", row.names = 1)
+A_v <-  read.csv("A_VAR_v_input.csv", row.names = 1)
+param<- read.csv('lin_param.csv', row.names = 1)
+
+```
+
+
+```{r}
+SP_sh<-as.ts(SP_sh[,c(1,3,5)])
+bvar_sp_sh <- bvar.sv.tvp(SP_sh,pdrift=TRUE,p=1)
+varcov_sp_sh <- bvar_sp_sh$H.postmean
+
+#J<-matrix(0,nrow=3,ncol=6)
+#J[1,1]=1
+#J[2,3]=1
+#J[3,5]=1
+
+#e1<- c(1,0,0,0,0,0)
+#e2<- c(0,0,1,0,0,0)
+#e3<- c(0,0,0,0,1,0)
+#iden<-diag(6)
+
+e1<- c(1,0,0)
+e2<- c(0,1,0)
+e3<- c(0,0,1)
+iden<-diag(3)
+
+m<-length(bvar_sp_sh$Beta.postmean[1,1,])
+s <- 1:m
+
+vol_sp_sh<-list()
+vol_sp_nf_sh<-list()
+ratio_sp_sh<-list()
+
+for (i in s){
+  a<-param[[1]]
+  D<-t(chol(varcov_sp_sh[,,i]))
+  coefs_sp_sh<-bvar_sp_sh$Beta.postmean[,c(2,3,4),i]
+#  for (k in 1:3){
+#    for (j in 1:3){
+#      coefs_sp_sh[1+2*(k-1),1+2*(j-1)]=bvar_sp_sh$Beta.postmean[k,c(2,3,4,5,6,7),i][j]
+#      coefs_sp_sh[1+2*(k-1),1+2*(j-1)+1]=bvar_sp_sh$Beta.postmean[k,c(2,3,4,5,6,7),i][j+3]
+#    }
+#  }
+#  coef_sp_sh[2,1]=1
+#  coef_sp_sh[4,3]=1
+#  coef_sp_sh[6,5]=1
+  
+  e1_l<-(e1%*%(a*coefs_sp_sh)%*%solve(iden-a*coefs_sp_sh))%*%D
+  e2_l<-(e2%*%(a*coefs_sp_sh)%*%solve(iden-a*coefs_sp_sh))%*%D
+  e3_l<-(e3%*%(a*(1-a)*coefs_sp_sh)%*%solve(iden-a*coefs_sp_sh))%*%D
+  vol<-(e2_l+e3_l-e1_l)%*%t(e2_l+e3_l-e1_l)
+  vol_nf<-e3_l%*%t(e3_l)
+  vol_sp_sh[i] <- vol
+  vol_sp_nf_sh[i] <- vol_nf
+  ratio_sp_sh[i] <- vol_nf/vol
+}
+write.csv(ratio_sp_sh,"ratio_sp_sh_Sv.csv")
+```
+
+
+```{r}
+SP_v<-as.ts(SP_v[,c(1,3,5)])
+bvar_sp_v <- bvar.sv.tvp(SP_v,pdrift=FALSE,p=1)
+varcov_sp_v <- bvar_sp_v$H.postmean
+
+#J<-matrix(0,nrow=3,ncol=6)
+#J[1,1]=1
+#J[2,3]=1
+#J[3,5]=1
+
+#e1<- c(1,0,0,0,0,0)
+#e2<- c(0,0,1,0,0,0)
+#e3<- c(0,0,0,0,1,0)
+#iden<-diag(6)
+
+e1<- c(1,0,0)
+e2<- c(0,1,0)
+e3<- c(0,0,1)
+iden<-diag(3)
+
+m<-length(bvar_sp_v$Beta.postmean[1,1,])
+s <- 1:m
+
+vol_sp_v<-list()
+vol_sp_nf_v<-list()
+ratio_sp_v<-list()
+
+for (i in s){
+  a<-param[[2]]
+  D<-t(chol(varcov_sp_v[,,i]))
+  coefs_sp_v<-bvar_sp_v$Beta.postmean[,c(2,3,4),i]
+#  coefs_sp_v<-matrix(0,nrow=6,ncol=6)
+#  for (k in 1:3){
+#    for (j in 1:3){
+#      coefs_sp_v[1+2*(k-1),1+2*(j-1)]=bvar_sp_v$Beta.postmean[k,c(2,3,4,5,6,7),i][j]
+#      coefs_sp_v[1+2*(k-1),1+2*(j-1)+1]=bvar_sp_v$Beta.postmean[k,c(2,3,4,5,6,7),i][j+3]
+#    }
+#  }
+#  coefs_sp_v[2,1]=1
+#  coefs_sp_v[4,3]=1
+#  coefs_sp_v[6,5]=1
+  
+  e1_l<-(e1%*%(a*coefs_sp_v)%*%solve(iden-a*coefs_sp_v))%*%D
+  e2_l<-(e2%*%(coefs_sp_v)%*%solve(iden-a*coefs_sp_v))%*%D
+  e3_l<-(e3%*%((a^2)*coefs_sp_v)%*%solve(iden-a*coefs_sp_v))%*%D
+  vol<-(e2_l+e3_l-e1_l)%*%t(e2_l+e3_l-e1_l)
+  vol_nf<-e3_l%*%t(e3_l)
+  vol_sp_v[i] <- vol
+  vol_sp_nf_v[i] <- vol_nf
+  ratio_sp_v[i] <- vol_nf/vol
+}
+write.csv(ratio_sp_v,"ratio_sp_v_Sv.csv")
+```
+
+
+```{r}
+C_sh<-as.ts(C_sh[,c(1,3,5)])
+bvar_c_sh <- bvar.sv.tvp(C_sh,pdrift=TRUE,p=1)
+varcov_c_sh <- bvar_c_sh$H.postmean
+
+#J<-matrix(0,nrow=3,ncol=6)
+#J[1,1]=1
+#J[2,3]=1
+#J[3,5]=1
+
+#e1<- c(1,0,0,0,0,0)
+#e2<- c(0,0,1,0,0,0)
+#e3<- c(0,0,0,0,1,0)
+#iden<-diag(6)
+
+e1<- c(1,0,0)
+e2<- c(0,1,0)
+e3<- c(0,0,1)
+iden<-diag(3)
+
+m<-length(bvar_c_sh$Beta.postmean[1,1,])
+s <- 1:m
+
+vol_c_sh<-list()
+vol_c_nf_sh<-list()
+ratio_c_sh<-list()
+
+for (i in s){
+  a<-param[[3]]
+  D<-t(chol(varcov_c_sh[,,i]))
+  coefs_c_sh<-bvar_c_sh$Beta.postmean[,c(2,3,4),i]
+#  for (k in 1:3){
+#    for (j in 1:3){
+#      coefs_c_sh[1+2*(k-1),1+2*(j-1)]=bvar_c_sh$Beta.postmean[k,c(2,3,4,5,6,7),i][j]
+#      coefs_c_sh[1+2*(k-1),1+2*(j-1)+1]=bvar_c_sh$Beta.postmean[k,c(2,3,4,5,6,7),i][j+3]
+#    }
+#  }
+#  coefs_c_sh[2,1]=1
+#  coefs_c_sh[4,3]=1
+#  coefs_c_sh[6,5]=1
+  
+  e1_l<-(e1%*%(a*coefs_c_sh)%*%solve(iden-a*coefs_c_sh))%*%D
+  e2_l<-(e2%*%(a*coefs_c_sh)%*%solve(iden-a*coefs_c_sh))%*%D
+  e3_l<-(e3%*%(a*(1-a)*coefs_c_sh)%*%solve(iden-a*coefs_c_sh))%*%D
+  vol<-(e2_l+e3_l-e1_l)%*%t(e2_l+e3_l-e1_l)
+  vol_nf<-e3_l%*%t(e3_l)
+  vol_c_sh[i] <- vol
+  vol_c_nf_sh[i] <- vol_nf
+  ratio_c_sh[i] <- vol_nf/vol
+}
+write.csv(ratio_c_sh,"ratio_c_sh_Sv.csv")
+```
+
+
+```{r}
+C_v<-as.ts(C_v[,c(1,3,5)])
+bvar_c_v <- bvar.sv.tvp(C_v,pdrift=TRUE,p=1)
+varcov_c_v <- bvar_c_v$H.postmean
+
+#J<-matrix(0,nrow=3,ncol=6)
+#J[1,1]=1
+#J[2,3]=1
+#J[3,5]=1
+
+#e1<- c(1,0,0,0,0,0)
+#e2<- c(0,0,1,0,0,0)
+#e3<- c(0,0,0,0,1,0)
+#iden<-diag(6)
+
+e1<- c(1,0,0)
+e2<- c(0,1,0)
+e3<- c(0,0,1)
+iden<-diag(3)
+
+m<-length(bvar_c_v$Beta.postmean[1,1,])
+s <- 1:m
+
+vol_c_v<-list()
+vol_c_nf_v<-list()
+ratio_c_v<-list()
+
+for (i in s){
+  a<-param[[4]]
+  D<-t(chol(varcov_c_v[,,i]))
+  coefs_c_v<-bvar_c_v$Beta.postmean[,c(2,3,4),i]
+#  for (k in 1:3){
+#    for (j in 1:3){
+#      coefs_c_v[1+2*(k-1),1+2*(j-1)]=bvar_c_v$Beta.postmean[k,c(2,3,4,5,6,7),i][j]
+#      coefs_c_v[1+2*(k-1),1+2*(j-1)+1]=bvar_c_v$Beta.postmean[k,c(2,3,4,5,6,7),i][j+3]
+#    }
+#  }
+#  coefs_c_v[2,1]=1
+#  coefs_c_v[4,3]=1
+#  coefs_c_v[6,5]=1
+  
+  e1_l<-(e1%*%(a*coefs_c_v)%*%solve(iden-a*coefs_c_v))%*%D
+  e2_l<-(e2%*%(coefs_c_v)%*%solve(iden-a*coefs_c_v))%*%D
+  e3_l<-(e3%*%((a**2)*coefs_c_v)%*%solve(iden-a*coefs_c_v))%*%D
+  vol<-(e2_l+e3_l-e1_l)%*%t(e2_l+e3_l-e1_l)
+  vol_nf<-e3_l%*%t(e3_l)
+  vol_c_v[i] <- vol
+  vol_c_nf_v[i] <- vol_nf
+  ratio_c_v[i] <- vol_nf/vol
+}
+write.csv(ratio_c_v,"ratio_c_v_Sv.csv")
+```
+
+
+```{r}
+A_sh<-as.ts(A_sh[,c(1,3,5)])
+bvar_a_sh <- bvar.sv.tvp(A_sh,pdrift=TRUE,p=1,tau=10)
+varcov_a_sh <- bvar_a_sh$H.postmean
+
+#J<-matrix(0,nrow=3,ncol=6)
+#J[1,1]=1
+#J[2,3]=1
+#J[3,5]=1
+
+#e1<- c(1,0,0,0,0,0)
+#e2<- c(0,0,1,0,0,0)
+#e3<- c(0,0,0,0,1,0)
+#iden<-diag(6)
+
+e1<- c(1,0,0)
+e2<- c(0,1,0)
+e3<- c(0,0,1)
+iden<-diag(3)
+
+m<-length(bvar_a_sh$Beta.postmean[1,1,])
+s <- 1:m
+
+vol_a_sh<-list()
+vol_a_nf_sh<-list()
+ratio_a_sh<-list()
+
+for (i in s){
+  a<-param[[5]]
+  D<-t(chol(varcov_a_sh[,,i]))
+  coefs_a_sh<-bvar_a_sh$Beta.postmean[,c(2,3,4),i]
+#  for (k in 1:3){
+#    for (j in 1:3){
+#      coefs_a_sh[1+2*(k-1),1+2*(j-1)]=bvar_a_sh$Beta.postmean[k,c(2,3,4,5,6,7),i][j]
+#      coefs_a_sh[1+2*(k-1),1+2*(j-1)+1]=bvar_a_sh$Beta.postmean[k,c(2,3,4,5,6,7),i][j+3]
+#    }
+#  }
+#  coefs_a_sh[2,1]=1
+#  coefs_a_sh[4,3]=1
+#  coefs_a_sh[6,5]=1
+  
+  e1_l<-(e1%*%(a*coefs_a_sh)%*%solve(iden-a*coefs_a_sh))%*%D
+  e2_l<-(e2%*%(a*coefs_a_sh)%*%solve(iden-a*coefs_a_sh))%*%D
+  e3_l<-(e3%*%(a*(1-a)*coefs_a_sh)%*%solve(iden-a*coefs_a_sh))%*%D
+  vol<-(e2_l+e3_l-e1_l)%*%t(e2_l+e3_l-e1_l)
+  vol_nf<-e3_l%*%t(e3_l)
+  vol_a_sh[i] <- vol
+  vol_a_nf_sh[i] <- vol_nf
+  ratio_a_sh[i] <- vol_nf/vol
+}
+write.csv(ratio_a_sh,"ratio_A_sh_Sv.csv")
+```
+
+
+```{r}
+A_v<-as.ts(A_v[,c(1,3,5)])
+bvar_a_v <- bvar.sv.tvp(A_v,pdrift=FALSE,p=1,tau=10)
+varcov_a_v <- bvar_a_v$H.postmean
+
+#J<-matrix(0,nrow=3,ncol=6)
+#J[1,1]=1
+#J[2,3]=1
+#J[3,5]=1
+
+#e1<- c(1,0,0,0,0,0)
+#e2<- c(0,0,1,0,0,0)
+#e3<- c(0,0,0,0,1,0)
+#iden<-diag(6)
+
+e1<- c(1,0,0)
+e2<- c(0,1,0)
+e3<- c(0,0,1)
+iden<-diag(3)
+
+m<-length(bvar_a_v$Beta.postmean[1,1,])
+s <- 1:m
+
+vol_a_v<-list()
+vol_a_nf_v<-list()
+ratio_a_v<-list()
+
+for (i in s){
+  a<-param[[6]]
+  D<-t(chol(varcov_a_v[,,i]))
+  coefs_a_v<-bvar_a_v$Beta.postmean[,c(2,3,4),i]
+#  for (k in 1:3){
+#    for (j in 1:3){
+#      coefs_a_v[1+2*(k-1),1+2*(j-1)]=bvar_a_v$Beta.postmean[k,c(2,3,4,5,6,7),i][j]
+#      coefs_a_v[1+2*(k-1),1+2*(j-1)+1]=bvar_a_v$Beta.postmean[k,c(2,3,4,5,6,7),i][j+3]
+#   }
+#  }
+#  coefs_a_v[2,1]=1
+#  coefs_a_v[4,3]=1
+#  coefs_a_v[6,5]=1
+  
+  e1_l<-(e1%*%(a*coefs_a_v)%*%solve(iden-a*coefs_a_v))%*%D
+  e2_l<-(e2%*%(a*coefs_a_v)%*%solve(iden-a*coefs_a_v))%*%D
+  e3_l<-(e3%*%(a*coefs_a_v)%*%solve(iden-a*coefs_a_v))%*%D
+  vol<-(e2_l+e3_l-e1_l)%*%t(e2_l+e3_l-e1_l)
+  vol_nf<-e3_l%*%t(e3_l)
+  vol_a_v[i] <- vol
+  vol_a_nf_v[i] <- vol_nf
+  ratio_a_v[i] <- vol_nf/vol
+}
+write.csv(ratio_a_v,"ratio_A_v_Sv.csv")
+```
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
