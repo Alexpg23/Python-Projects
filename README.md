@@ -6,7 +6,11 @@ problem solving related to Portfolio Management, Risk Management, Derivatives Pr
 and Machine Leargning Applications. This Index is aimed to help readers to find the relevant files among all 
 the support files and to give a general insight of the problem solved and models used within each project.
 
+
+
 1. BVAR with Stochastic Vol - Thesis
+
+
   The change in stock prices dynamic during recent years have made impossible to disregard the
     role that the so-called "democratization" of financial markets have played in the augmented
     volatility experienced in it. In this sense, it has become more important than ever to correctly
@@ -23,9 +27,12 @@ the support files and to give a general insight of the problem solved and models
 
   
 2. MSc Financial Engineering
+
+
   In this folder, you can find all the projects realized during my master program at EDHEC Business
     School. There are examples of Advanced Derivatives models, Risk Management models, Machine 
     Learning Applications to finance, Investment Strategies using Machine Learning Methods, etc.
+_    
     2.1 Derivatives
       In this folder, there are several excersices applying advanced derivatives concepts in Python 
         like Delta Hedging Strategies (with or without costs), Stock Price distribution implied in
