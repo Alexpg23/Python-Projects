@@ -4,7 +4,8 @@ This repository contains several Python, R and excel projects created by me indi
 along my academic and professional preparation. The notebooks contain several example of finance-related
 problem solving related to Portfolio Management, Risk Management, Derivatives Pricing, Investment Strategies
 and Machine Leargning Applications. This Index is aimed to help readers to find the relevant files among all 
-the support files and to give a general insight of the problem solved and models used within each project.
+the support files and to give a general insight of the problem solved and models used within each project. All
+of the projects referenced below are developed in Python or R.
 
 
 
@@ -61,8 +62,40 @@ _
           2.4.1.1  ML_Coursework_1_79083_79794_73713.ipynb
         2.4.2  IntroToML_Coursework_Two
           2.4.2.1  ML_Coursework_2_79083_79794_73713.ipynb
+ _
     2.5 Machine Learning Applications
-    2.6 Market Micro
+      In this folder, there additional excersices introducing different Manchine Learning, now exploring 
+        Unsupervised Learnign and Reinforcement Learning, some of which are applied into finance problems.
+        Some of the models that are used are Single and Multilayer Perceptons regressions, Artificial Neural 
+        Networks (applied to options pricing and hedging), Natural Language Processing (Bag of Words, Words
+        Embedding, etc.), Autoencoders, Recursive Neural Networks, Sequence-To-Sequence models, Reinforcement
+        Learnign model, etc.
+        2.5.1  Coursework
+          2.5.1.1  ML_IN_FINANCE_COURSEWORK_79803_73713_79793
+            2.5.1.1.1  ML_IN_F_COURSEWORK_79803_73713_79793.ipynb
+_
+    2.6 Market Microstructure
+      In this folder, you can find a liquidity-based investment strategy implemented in Python. The strategy
+        is based on Bid-Ask spreand and Volume analysis.
+        2.6.1  Liquidity Trading Strategy.ipynb
+_
     2.7 Risk Measurement
+      In this folder, there is some excersices implementing different Risk Management strategies. Some of them 
+        are Volatility fitting through GARCH and EWMA models, Valut-at-Risk and Expected Shortfall estimation 
+        through parametric and non-parametric methods, and accuracy scoring of both volatility and risk 
+        measures estimates. Risk attribution, Stress Testing and Backtesting are implemented in order to correctly
+        specify sources of risk and to provide insights about the risk profile of an investment portfolio.
+        2.7.1  RM_Coursework_1.ipynb
+        2.7.2  RM_Coursework_2.ipynb
+_
     2.8 Sequential Investing
+      In this folder, you can find an investment strategy that was proposed and developed by myself using Machine
+        Learnign models in Python. The strategy is a hedging strategy using a market volatility proxy like VIX. The
+        model tries to extract signlas from the markets to predcit when would it be necessary to hedge the market
+        exposure and in what proportion.The strategy succeds in outperforming the market.
+        2.8.1  Prediciton and Sequential Investment Strategies-Final-Assignment-73713.ipynb
+-
     2.9 VBA
+      In this folder, there is some derivatives and finance-realated excersices soved using Visual Basic. Some of them 
+        are the pricing of a forward starting option and a Vascisek model calibration using Monte Carlo simulation.
+        2.9.1  PALACIOS_Alejandro_SANTOSDECARVALHO_Marcel_VBA_FA.xlsm
